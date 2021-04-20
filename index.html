@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Validação CPF</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            border: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background-color: #f1f1f1;
+        }
+
+        header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 16px;
+            background: linear-gradient(to right, #6051e6 6%, #5966e7 25%, #4f81e9 55%, #499bea 69%, #43a5eb 83%, #3bbeec 99%);
+        }
+
+        .msg {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            right: -100%;
+            top: 5px;
+            transition: all 0.3s;
+            height: 60px;
+            width: 300px;
+        }
+
+        .rigth-msg {
+            right: 5px;
+        }
+
+        .msg .text {
+            flex: 1;
+        }
+
+        #arquivo-label {
+            overflow: hidden;
+        }
+
+        @media(max-width: 1371px) {
+            .container-buttons {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .container-buttons>button {
+                margin-bottom: 5px;
+            }
+        }
+
+        @media(max-width: 800px) {
+            .use-form {
+                flex-direction: column;
+            }
+
+            .use-input {
+                width: 100% !important;
+                margin-bottom: 10px;
+            }
+
+            .container-buttons {
+                display: block;
+            }
+        }
+
+        #loading {
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: rgb(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .display-flex {
+            display: flex !important;
+        }
+
+        .loader {
+            width: 60px;
+        }
+
+        .loader-wheel {
+            animation: spin 1s infinite linear;
+            border: 2px solid rgba(30, 30, 30, 0.5);
+            border-left: 4px solid #fff;
+            border-radius: 50%;
+            height: 50px;
+            margin-bottom: 10px;
+            width: 50px;
+        }
+
+        .loader-text {
+            color: #fff;
+            font-family: arial, sans-serif;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media print {
+
+            header,
+            #msg,
+            .use-form {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <span>Validação CPF</span>
+    </header>
+    <div id="msg" class="alert msg p-2">
+        <span id="msg-text" class="text">asdfsafsafsa</span>
+        <button id="btn-close-msg" class="btn sm p-2"><i class="fas fa-times"></i></button>
+    </div>
+    <form class="d-flex p-2 use-form">
+        <div class="d-flex w-25 align-items-center mr-1 use-input">
+            <i class="fas fa-key mr-1 text-primary"></i>
+            <input class="form-control mr-2 border" type="text" placeholder="Primeira chave" name="token"
+                id="primeira-chave">
+        </div>
+        <div class="d-flex w-25 align-items-center mr-2 use-input">
+            <i class="fas fa-key mr-1 text-primary"></i>
+            <input class="form-control mr-2 border" type="text" placeholder="Segunda chave" name="token"
+                id="segunda-chave">
+        </div>
+        <div class="input-group w-25 mr-2 use-input d-flex align-items-center">
+            <i class="fas fa-file mr-1 text-primary"></i>
+            <div class="custom-file">
+                <input type="file" class="custom-file-input border" id="arquivo">
+                <label class="custom-file-label border" for="arquivo" id="arquivo-label">Selecionar arquivo
+                    (.txt)</label>
+            </div>
+        </div>
+        <div class="container-buttons">
+            <button type="button" id="btn-validar" class="btn btn-outline-primary mr-1"><i class="fas fa-search"></i>
+                <span>Validar</span></button>
+            <button type="button" id="btn-exportar" class="btn btn-outline-success mr-1" hidden><i
+                    class="fas fa-file-csv"></i>
+                <span>Exportar</span></button>
+            <button type="button" id="btn-imprimir" class="btn btn-outline-info" hidden><i class="fas fa-print"></i></i>
+                <span>Imprimir</span></button>
+        </div>
+    </form>
+    <section class="pl-2 pr-2">
+        <table id="table" class="table mr-2 table-hover bg-light">
+            <thead class="bg-secondary text-light">
+                <tr>
+                    <th scope="col">CPF</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </section>
+    <div id="loading">
+        <div class="loader-wheel"></div>
+        <div class="loader-text">Carregando...</div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
