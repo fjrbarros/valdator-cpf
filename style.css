@@ -1,0 +1,124 @@
+ * {
+     border: 0;
+     margin: 0;
+     box-sizing: border-box;
+ }
+ 
+ html,
+ body {
+     height: 100%;
+ }
+ 
+ body {
+     background-color: #f1f1f1;
+ }
+ 
+ header {
+     height: 60px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     color: #ffffff;
+     font-size: 16px;
+     background: linear-gradient(to right, #6051e6 6%, #5966e7 25%, #4f81e9 55%, #499bea 69%, #43a5eb 83%, #3bbeec 99%);
+ }
+ 
+ .msg {
+     position: fixed;
+     display: flex;
+     align-items: center;
+     right: -100%;
+     top: 5px;
+     transition: all 0.3s;
+     height: 60px;
+     width: 300px;
+ }
+ 
+ .rigth-msg {
+     right: 5px;
+ }
+ 
+ .msg .text {
+     flex: 1;
+ }
+ 
+ #arquivo-label {
+     overflow: hidden;
+ }
+ 
+ @media(max-width: 1371px) {
+     .container-buttons {
+         display: flex;
+         flex-direction: column;
+     }
+     .container-buttons>button {
+         margin-bottom: 5px;
+     }
+ }
+ 
+ @media(max-width: 800px) {
+     .use-form {
+         flex-direction: column;
+     }
+     .use-input {
+         width: 100%!important;
+         margin-bottom: 10px;
+     }
+     .container-buttons {
+         display: block;
+     }
+ }
+ 
+ #loading {
+     height: 100vh;
+     width: 100vw;
+     position: absolute;
+     top: 0;
+     left: 0;
+     display: none;
+     justify-content: center;
+     align-items: center;
+     flex-direction: column;
+     background-color: rgb(0, 0, 0, 0.5);
+     z-index: 9999;
+ }
+ 
+ .display-flex {
+     display: flex!important;
+ }
+ 
+ .loader {
+     width: 60px;
+ }
+ 
+ .loader-wheel {
+     animation: spin 1s infinite linear;
+     border: 2px solid rgba(30, 30, 30, 0.5);
+     border-left: 4px solid #fff;
+     border-radius: 50%;
+     height: 50px;
+     margin-bottom: 10px;
+     width: 50px;
+ }
+ 
+ .loader-text {
+     color: #fff;
+     font-family: arial, sans-serif;
+ }
+ 
+ @keyframes spin {
+     0% {
+         transform: rotate(0deg);
+     }
+     100% {
+         transform: rotate(360deg);
+     }
+ }
+ 
+ @media print {
+     header,
+     #msg,
+     .use-form {
+         display: none!important;
+     }
+ }
