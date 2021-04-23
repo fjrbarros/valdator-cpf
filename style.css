@@ -27,15 +27,17 @@
      position: fixed;
      display: flex;
      align-items: center;
-     right: -100%;
-     top: 5px;
+     left: 50%;
+     transform: translate(-50%);
+     top: -60px;
      transition: all 0.3s;
      height: 60px;
-     width: 300px;
+     width: 350px;
  }
  
  .rigth-msg {
-     right: 5px;
+     /* right: 5px; */
+     top: 5px;
  }
  
  .msg .text {

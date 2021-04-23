@@ -96,7 +96,7 @@ function recuperaDadosTxt() {
     const fileReader = new FileReader();
 
     fileReader.onload = file => {
-        var arrayCpf = file.target.result.split('\n');
+        var arrayCpf = file.target.result.split('\n').filter(item => item !== '');
 
         executaRequisicao(arrayCpf);
     };
@@ -111,9 +111,9 @@ function recuperaDadosTxt() {
 
 async function executaRequisicao(arrayCpf) {
 
-    const token = await recuperaToken();
+    const result = await recuperaToken();
 
-    if (!token || token?.error?.length) {
+    if (!result || result.error) {
         mostraMsg('erro', 'Erro ao recuperar Token de acesso!');
         loading(false);
         return
@@ -121,34 +121,28 @@ async function executaRequisicao(arrayCpf) {
 
     const headers = new Headers({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${result.access_token}`
+            // 'Access-Control-Allow-Origin': '*',
+            // 'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, HEAD, OPTIONS'
     });
 
+    // const options = { method: 'GET', headers, mode: 'no-cors' };
     const options = { method: 'GET', headers };
 
-    let erro = false;
-
-    var requests = Promise.all(arrayCpf.map(cpf => {
-        return fetch(`https://gateway.apiserpro.serpro.gov.br/consulta-cpf-df-trial/v1/cpf/${cpf}`, options)
-            .then(response => {
-                if (response.ok) {
-                    return response.json()
-                }
-
-                erro = true;
-            })
-            .catch(error => console.error(`Erro ao realizar requisição ${error}`))
+    var requests = await Promise.all(arrayCpf.map(cpf => {
+        return fetch(`https://gateway.apiserpro.serpro.gov.br/consulta-cpf/v1/cpf/${cpf}`, options)
+            .then(response => response.json())
+            .then(resp => resp)
+            .catch(error => error)
     }));
 
-    arryCpfValidos = await requests;
-
-    if (erro) {
+    if (!requests) {
         mostraMsg('erro', 'Erro ao tentar validar dados!');
         loading(false);
         return
     }
 
-    montaTableData();
+    // montaTableData();
 }
 
 async function recuperaToken() {
@@ -165,7 +159,8 @@ async function recuperaToken() {
 
     return fetch('https://gateway.apiserpro.serpro.gov.br/token', options)
         .then(response => response.json())
-        .catch(() => mostraMsg('erro', 'Erro ao realizar requisição!'))
+        .then(resp => resp)
+        .catch(error => error);
 }
 
 function montaTableData() {
