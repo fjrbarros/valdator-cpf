@@ -8,7 +8,9 @@ const campoArquivoLabel = document.getElementById('arquivo-label');
 const btnCloseMsg = document.getElementById('btn-close-msg');
 const btnExportarCsv = document.getElementById('btn-exportar');
 const btnImprimir = document.getElementById('btn-imprimir');
+const cpfCount = document.getElementById('cpf-count');
 let arryCpfValidos = [];
+let tokenAutenticacao = '';
 
 function adicionaListeners() {
     if (!btnValidar && !campoArquivo) return;
@@ -57,6 +59,8 @@ function validaCamposInformados(event) {
 
     if (campoInvalido) return;
 
+    arryCpfValidos = [];
+
     recuperaDadosTxt();
 }
 
@@ -96,7 +100,7 @@ function recuperaDadosTxt() {
     const fileReader = new FileReader();
 
     fileReader.onload = file => {
-        var arrayCpf = file.target.result.split('\n').filter(item => item !== '');
+        var arrayCpf = file.target.result.split('\n');
 
         executaRequisicao(arrayCpf);
     };
@@ -111,44 +115,59 @@ function recuperaDadosTxt() {
 
 async function executaRequisicao(arrayCpf) {
 
-    const result = await recuperaToken();
+    await recuperaToken();
 
-    if (!result || result.error) {
-        mostraMsg('erro', 'Erro ao recuperar Token de acesso!');
-        loading(false);
-        return
+    for (let i = 0; i < arrayCpf.length; i++) {
+        const cpf = arrayCpf[i];
+
+        if (cpf && cpf.trim().length) {
+            await validaCpf(cpf);
+        }
     }
 
-    const headers = new Headers({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${result.access_token}`
-            // 'Access-Control-Allow-Origin': '*',
-            // 'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, HEAD, OPTIONS'
-    });
-
-    // const options = { method: 'GET', headers, mode: 'no-cors' };
-    const options = { method: 'GET', headers };
-
-    var requests = await Promise.all(arrayCpf.map(cpf => {
-        return fetch(`https://gateway.apiserpro.serpro.gov.br/consulta-cpf/v1/cpf/${cpf}`, options)
-            .then(response => response.json())
-            .then(resp => resp)
-            .catch(error => error)
-    }));
-
-    if (!requests) {
+    if (!arryCpfValidos.length) {
         mostraMsg('erro', 'Erro ao tentar validar dados!');
         loading(false);
         return
     }
 
-    // montaTableData();
+    montaTableData();
+}
+
+async function validaCpf(cpf) {
+
+    const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    });
+
+    const options = { method: 'GET', headers };
+
+    const response = await fetch(`https://gateway.apiserpro.serpro.gov.br/consulta-cpf-df/v1/cpf/${cpf}`, options);
+
+    switch (response.status) {
+        case 401:
+            await recuperaToken();
+            await validaCpf(cpf);
+            break;
+        case 404:
+            arryCpfValidos.push({ mensagem: `Este cpf ${cpf} não existe!` });
+            break;
+        case 400, 403, 500, 504:
+            mostraMsg(`Erro durante a requisição, código erro: ${response.status}`);
+            isLoading(false);
+            break;
+        default:
+            const json = await response.json();
+            arryCpfValidos.push(json);
+            break;
+    }
 }
 
 async function recuperaToken() {
     const valuePrimeiraChave = primeiraChave.value;
     const valueSegundaChave = segundaChave.value;
-    const valueBase64 = btoa(valuePrimeiraChave + ':' + valueSegundaChave);
+    const valueBase64 = btoa(`${valuePrimeiraChave}:${valueSegundaChave}`);
 
     const headers = new Headers({
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -157,10 +176,16 @@ async function recuperaToken() {
 
     const options = { method: 'POST', headers, body: 'grant_type=client_credentials' };
 
-    return fetch('https://gateway.apiserpro.serpro.gov.br/token', options)
-        .then(response => response.json())
-        .then(resp => resp)
-        .catch(error => error);
+    const response = await fetch('https://gateway.apiserpro.serpro.gov.br/token', options);
+    const json = await response.json();
+
+    if (json.access_token) {
+        token = json.access_token;
+    } else {
+        mostraMsg('erro', 'Erro ao recuperar Token de acesso!');
+        loading(false);
+        return
+    }
 }
 
 function montaTableData() {
@@ -174,15 +199,24 @@ function montaTableData() {
         tBody.removeChild(tBody.children[0]);
     }
 
+    let count = 0;
+
     arryCpfValidos.forEach(item => {
+        const dados = getDadosFormatados(item);
         const newRow = tBody.insertRow(tBody.rows.length);
-        let cpf = formataCpf(item.ni);
+
         newRow.innerHTML = `<tr>
-                                <td scope='row'>${cpf}</td>
-                                <td>${item.nome}</td>
-                                <td>${item.situacao.descricao}</td>
+                                <td scope='row'>${dados.cpf}</td>
+                                <td>${dados.nome}</td>
+                                <td>${dados.situacao}</td>
                             </tr>`
+
+        if (item.ni) count++;
     });
+
+    if (cpfCount) {
+        cpfCount.innerHTML = `Quatidade CPF validos: ${count}`
+    }
 
     if (arryCpfValidos.length) {
         btnExportarCsv.removeAttribute('hidden');
@@ -192,7 +226,15 @@ function montaTableData() {
     loading(false);
 }
 
-function formataCpf(cpf) {
+function getDadosFormatados(item) {
+    return {
+        cpf: item.ni ? getCpfFormatado(item.ni) : '',
+        nome: item.mensagem ? item.mensagem : item.nome,
+        situacao: item.mensagem ? '' : item.situacao.descricao
+    };
+}
+
+function getCpfFormatado(cpf) {
     cpf = cpf.replace(/[^\d]/g, '');
     cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
     return cpf;
@@ -219,12 +261,15 @@ function gerarArquivoCsv() {
 
     let csv = 'CPF; Nome; Situação\n';
 
-    arryCpfValidos.forEach(item => csv += `${formataCpf(item.ni)};${item.nome};${item.situacao.descricao}\n`);
+    arryCpfValidos.forEach(item => {
+        const dados = getDadosFormatados(item);
+        csv += `${dados.cpf}; ${dados.nome}; ${dados.situacao} \n`;
+    });
 
     var hiddenElement = document.createElement('a');
     hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI('\uFEFF' + csv);
     hiddenElement.target = '_blank';
-    hiddenElement.download = 'cpf_validacao.csv';
+    hiddenElement.download = 'Consumidor_UCs_Nao_Ligadas.csv';
     hiddenElement.click();
     mostraMsg('success', 'Dados exportados com sucesso!');
 }

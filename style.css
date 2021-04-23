@@ -107,6 +107,11 @@
      color: #fff;
      font-family: arial, sans-serif;
  }
+
+ #cpf-count {
+    font-size: 17px;
+    font-weight: 600;
+ }
  
  @keyframes spin {
      0% {

@@ -19,14 +19,16 @@
         <span id="msg-text" class="text"></span>
         <button id="btn-close-msg" class="btn sm p-2"><i class="fas fa-times"></i></button>
     </div>
-    <form class="d-flex p-2 use-form">
+    <form class="d-flex p-2 use-form" autocomplete="off">
         <div class="d-flex w-25 align-items-center mr-1 use-input">
             <i class="fas fa-key mr-1 text-primary"></i>
-            <input class="form-control mr-2 border" type="text" placeholder="Primeira chave" name="token" id="primeira-chave">
+            <input class="form-control mr-2 border" type="text" placeholder="Primeira chave" name="token"
+                id="primeira-chave">
         </div>
         <div class="d-flex w-25 align-items-center mr-2 use-input">
             <i class="fas fa-key mr-1 text-primary"></i>
-            <input class="form-control mr-2 border" type="text" placeholder="Segunda chave" name="token" id="segunda-chave">
+            <input class="form-control mr-2 border" type="text" placeholder="Segunda chave" name="token"
+                id="segunda-chave">
         </div>
         <div class="input-group w-25 mr-2 use-input d-flex align-items-center">
             <i class="fas fa-file mr-1 text-primary"></i>
@@ -58,6 +60,9 @@
             <tbody>
             </tbody>
         </table>
+        <div style="height: 35px; display: flex; justify-content: flex-end; margin-right: 10px;">
+            <p id="cpf-count"></p>
+        </div>
     </section>
     <div id="loading">
         <div class="loader-wheel"></div>
